@@ -1,4 +1,4 @@
-#!/bin/sh    
+#!/bin/sh
 
 # Aliases that setup shortcut commands
 # USeful when working on Terminal
