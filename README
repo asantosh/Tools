@@ -5,14 +5,10 @@ Initial system settings, shortcuts(alias) and tools that would be useful for a b
 
 --Scripts/: [contains all the scripts]
    --------------------------------------------------------------
-   |
-   --bashrc.sh  "Script to set initial .bashrc aliases"
-   |
+   -- bashrc.sh  "Script to set initial .bashrc aliases"
    --
 
 --Files/: [contains all the profile files required by the script]
    --------------------------------------------------------------
-   |
-   ----vimrc ".vimrc file to set commands for vi/vim/gvim editor"
-   |
+   -- vimrc ".vimrc file to set commands for vi/vim/gvim editor"
    --
