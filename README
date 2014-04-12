@@ -1,0 +1,18 @@
+Tools
+=====
+
+Initial system settings, shortcuts(alias) and tools that would be useful for a beginner.
+
+--Scripts/: [contains all the source files]
+   --------------------------------------------------------------
+   |
+   --bashrc.sh  "Script to set initial .bashrc aliases"
+   |
+   --
+
+--Files/: [contains all the source files]
+   --------------------------------------------------------------
+   |
+   ----vimrc ".vimrc file to set commands for vi/vim/gvim editor"
+   |
+   --
