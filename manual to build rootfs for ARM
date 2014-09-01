@@ -1,0 +1,240 @@
+http://processors.wiki.ti.com/index.php/Creating_a_Root_File_System_for_Linux_on_OMAP35x
+
+cd busybox--version
+
+make ARCH=arm AROSS_COMPILE=arm-none-linux-gnueabi- defconfig
+
+make ARCH=arm AROSS_COMPILE=arm-none-linux-gnueabi- menuconfig
+
+--enable static
+
+make ARCH=arm AROSS_COMPILE=arm-none-linux-gnueabi- 
+
+make ARCH=arm AROSS_COMPILE=arm-none-linux-gnueabi- install
+
+cp -r _install ../rootfs
+
+cd ../rootfs
+
+mknod ttySAC0 c 204 64 
+mknod tty0 c 4 0
+
+[root@localhost target]# mkdir dev
+[root@localhost target]# mknod dev/console c 5 1
+
+[root@localhost target]# mkdir dev/pts
+[root@localhost target]# mkdir etc
+[root@localhost target]# mkdir etc/init.d
+[root@localhost target]# mkdir lib
+[root@localhost target]# mkdir mnt
+[root@localhost target]# mkdir opt
+[root@localhost target]# mkdir proc
+[root@localhost target]# mkdir root
+[root@localhost target]# mkdir sys
+[root@localhost target]# mkdir tmp
+[root@localhost target]# mkdir var
+[root@localhost target]# mkdir var/log
+
+[root@localhost target]# cd etc
+[root@localhost etc]# vi fstab
+proc            /proc           proc    defaults        0 0
+none            /dev/pts        devpts  mode=0622       0 0
+
+
+[root@localhost etc]# vi group
+root:x:0:root
+
+[root@localhost etc]# vi passwd
+root::0:0:root:/root:/bin/ash 
+
+[root@localhost etc]# vi hosts
+127.0.0.1       localhost
+
+[root@localhost etc]# vi inittab
+::sysinit:/etc/init.d/rcS 
+
+# /bin/ash
+#
+# Start an "askfirst" shell on the serial port
+console::askfirst:-/bin/ash
+
+# Stuff to do when restarting the init process
+::restart:/sbin/init
+
+# Stuff to do before rebooting
+::ctrlaltdel:/sbin/reboot
+::shutdown:/bin/umount -a -r
+::shutdown:/sbin/swapoff -a
+
+
+[root@localhost etc]# vi init.d/rcS
+
+#!/bin/sh
+#   ---------------------------------------------
+#   Common settings
+#   ---------------------------------------------
+HOSTNAME=OMAP3EVM
+VERSION=1.0.0
+
+hostname $HOSTNAME
+
+#   ---------------------------------------------
+#   Prints execution status.
+#
+#   arg1 : Execution status
+#   arg2 : Continue (0) or Abort (1) on error
+#   ---------------------------------------------
+status ()
+{
+       if [ $1 -eq 0 ] ; then
+               echo "[SUCCESS]"
+       else
+               echo "[FAILED]"
+
+               if [ $2 -eq 1 ] ; then
+                       echo "... System init aborted."
+                       exit 1
+               fi
+       fi
+
+}
+
+#   ---------------------------------------------
+#   Get verbose
+#   ---------------------------------------------
+echo ""
+echo "    System initialization..."
+echo ""
+echo "    Hostname       : $HOSTNAME"
+echo "    Filesystem     : v$VERSION"
+echo ""
+echo ""
+echo "    Kernel release : `uname -s` `uname -r`"
+echo "    Kernel version : `uname -v`"
+echo ""
+
+
+#   ---------------------------------------------
+#   MDEV Support
+#   (Requires sysfs support in the kernel)
+#   ---------------------------------------------
+echo -n " Mounting /proc             : "
+mount -n -t proc /proc /proc
+status $? 1
+
+echo -n " Mounting /sys              : "
+mount -n -t sysfs sysfs /sys
+status $? 1
+
+echo -n " Mounting /dev              : "
+mount -n -t tmpfs mdev /dev
+status $? 1
+
+echo -n " Mounting /dev/pts          : "
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+status $? 1
+
+echo -n " Enabling hot-plug          : "
+echo "/sbin/mdev" > /proc/sys/kernel/hotplug
+status $? 0
+
+echo -n " Populating /dev            : "
+mkdir /dev/input
+mkdir /dev/snd
+
+mdev -s
+status $? 0
+
+#   ---------------------------------------------
+#   Disable power management
+#   (Requires sysfs support in the kernel)
+#   ---------------------------------------------
+# echo -n " Disabling Power mgmt       : "
+# echo -n "1" > /sys/power/cpuidle_deepest_state
+# status $? 1
+
+#   ---------------------------------------------
+#   Turn off LCD after 1 hour of inactivity
+#   (Requires sysfs support in the kernel)
+#   ---------------------------------------------
+# echo -n " Turn off LCD after 1 hour  : "
+# echo -n "3600" > /sys/power/fb_timeout_value
+# status $? 1
+
+
+#   ---------------------------------------------
+#   Mount the default file systems
+#   ---------------------------------------------
+echo -n " Mounting other filesystems : "
+mount -a
+status $? 0
+
+
+#   ---------------------------------------------
+#   Set PATH
+#   ---------------------------------------------
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin
+
+
+#   ---------------------------------------------
+#   Start other daemons
+#   ---------------------------------------------
+echo -n " Starting syslogd           : "
+/sbin/syslogd
+status $? 0
+
+echo -n " Starting telnetd           : "
+/usr/sbin/telnetd
+status $? 0
+
+
+#   ---------------------------------------------
+#   Done!
+#   ---------------------------------------------
+echo ""
+echo "System initialization complete."
+
+
+#   ---------------------------------------------
+#   Start demo app
+#   ---------------------------------------------
+#if [[ -x /etc/init.d/demo_start ]]; then
+#       echo " Starting Demo Application..."
+#       /etc/init.d/demo_start &
+#       sleep 5
+#fi
+
+cat /proc/filesystems | grep -q debugfs
+if [ $? -eq 0 ] ; then
+        echo -n " Mounting /debug             : "
+        mount -n -t debugfs none /debug
+        status $? 1
+fi
+
+
+
+[root@localhost etc]# vi mdev.conf
+
+audio       0:5 0666
+console     0:5 0600
+control.*   0:0 0660 @/bin/mv /dev/$MDEV /dev/snd/
+dsp         0:5 0666
+event.*     0:0 0600 @/bin/mv /dev/$MDEV /dev/input/
+fb          0:5 0666
+nfs         0:5 0770
+null        0:0 0777
+pcm.*       0:0 0660 @/bin/mv /dev/$MDEV /dev/snd/
+rtc         0:0 0666
+tty         0:5 0660
+tty0*       0:5 0660
+tty1*       0:5 0660
+tty2*       0:5 0660
+tty3*       0:5 0660
+tty4*       0:5 0660
+tty5*       0:5 0660
+tty6*       0:5 0660
+ttyS*       0:5 0640
+urandom     0:0 0444
+zero        0:0 0666
+
