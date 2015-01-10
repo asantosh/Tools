@@ -1,0 +1,53 @@
+
+Boot Sequence for an ARM based embedded system
+
+This post is going to explore the boot sequence for a Boot ROM based embedded system. It is based on my experiences with an ARM processor based embedded system, but the concept of an integrated Boot ROM is used by other modern CPUs and microcontrollers as well.
+
+In an ARM embedded system, at the time of power on, CPU is uninitialized and a basic clock setup, system specifics' setup is required before proceeding to the bigger and complex tasks. A piece of code  is required at power on which does the basic system setup before handing over the control to the bootloader present in flash(already programmed) or to support the download tool for programming the flash and then handing over the control to the bootloader present in flash.
+
+For this purpose, a hardware bootloader generally called as Boot Rom is provided by vendor (pre-loaded into the processors’ internal ROM).This is hardwired at the manufacturing time. After a power on reset, that causes the processor core to jump to the reset vector, Boot Rom is the first code to execute in the processor.
+
+Responsibilities of Bootrom
+
+Bootrom performs the essential initialization including programming the clocks, stacks, interrupt set up etc.
+Bootrom will detect the boot media using a system register. This is to determine where to find the software bootloader. A particular sequence of probing for boot media is followed as defined by the manufacturer. This includes the order of looking for bootloader in external NOR/NAND flash, or probing for some specific characters on UART /USB for establishing connection with downloader to download the binary in flash. If no bootloader is found in any external memory, bootrom listens for a download request on UART/USB port to start the download process.
+Thus during the probing process, if the flash has already been programmed,  software bootloader will be detected to be available in flash , if not so –it will be downloaded to the flash by bootrom.(This probing sequence will generally assign higher priority to external memory , so if bootloader is detected to be present  in memory, it won't proceed to downloading the image again)
+For platforms using NAND flash , the bootrom will load this boot loader to internal RAM and set the program counter at the load address of the SW bootloader in RAM.
+ For platforms using NOR flash, control is transferred to the external flash (NOR flash is XiP- Execute in Place).
+ 
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+ Step 1: The reset
+
+On startup, the processor will jump to fixed location ,(most ARM cores support two vector locations 0x0 or 0xFFFF0000, controlled via a signal sampled at reset and a bit in CP15. Lets say that the core is configured to have its vectors at 0x0 ). This address should contain the reset vector and the default vector table. Reset vector is always the first instruction to be executed.The reset vector in this table will contain a branch to an address which will contain the reset code. Normally, at this stage, the rest of the vector table contains just the dummy handler- a branch instruction that causes an infinite loop(this is because this vector table is used very briefly and later on replaced by vector table in RAM after memory remap operation-explained in step 3) .
+
+ Step 2: The reset code
+
+This reset code to which the jump has been executed from the reset vector will do the following tasks:
+
+->Set up system registers  and memory environment
+
+->Set up MMU
+
+->Setup stack pointers : initialize stack pointers for all ARM modes
+
+->Set up bss section : zeroing the ZI data region,  copying initialization values for initialized variables from ROM to RAM
+
+->Set up hw : CPU clock initialization , external bus interface configuration,low level peripheral initialization etc
+
+
+Step 3: Remap Memory
+
+One of the job of the initial reset code will be memory remapping.At the time of power up, the processor jumps at fixed location 0x0.So, this is important to ensure there is some executable code present at this location at the time of power up. And to ensure this, some non volatile memory should be mapped to this address.
+
+So, at the time of power up, ROM is mapped to 0×0 location which contains the reset exception and default vector table. However, later on, during the s/w execution, on every interrupt, the processor needs to jump to the vector table which starts from 0×0 location. If this vector table is located in ROM, the execution of interrupts will become very slow as ROM is slower than RAM (ROM requires more wait states as well as more power consumption for access as compared to RAM).Also, if the vector table is present in ROM, it cannot be modified by code.
+
+Therefore for faster and more efficient execution of interrupts , it is better if interrupt handlers and vector table is located in RAM at address 0×0.However, if RAM was mapped to address 0×0 at the power on of processor, being a volatile memory , it won’t contain any executable code. Thus, it becomes important that at the time of start up, ROM is located at 0×0 address and then during normal execution RAM is re-mapped to this location.Memory remapping can be achieved through hardware remapping, that is changing the address map of the bus. This can also be acheived through MMU.
+
+Step 4: Jumping to C code (main function for eg)
+
+After the execution environment has been setup (setting up the vector table (handlers for each entry in the vector table), stack, critical I/Os etc., copying initialization values for initialized variables from ROM to RAM and resetting all other variables to zero.), assembly code can give way to C Code.
+
+ Step 5: Setting up the external memory, loading and executing the OS image
+
+External memory should be setup before loading an image to it (Refresh rate, clock etc),OS image can then be loaded from flash(assuming its NAND flash) to RAM.The OS image may be compressed in which case it needs to be decompressed before PC can be modified to point to the operating system entry point address.
