@@ -1,95 +1,58 @@
 " Vimrc file"
 " https://github.com/asantosh/Tools"
 
-set nocompatible    " use vim defaults
-set ls=2            " allways show status line
-set tabstop=4       " numbers of spaces of tab character
-set shiftwidth=4    " numbers of spaces to (auto)indent
-set scrolloff=3     " keep 3 lines when scrolling
-set showcmd         " display incomplete commands
-set hlsearch        " highlight searches
-set incsearch       " do incremental searching
-set ruler           " show the cursor position all the time
-set visualbell t_vb=    " turn off error beep/flash
-set novisualbell    " turn off visual bell
-set nobackup        " do not keep a backup file
-set number          " show line numbers
-set ignorecase      " ignore case when searching 
-"set noignorecase   " don't ignore case
-set title           " show title in console title bar
-set ttyfast         " smoother changes
-"set ttyscroll=0        " turn off scrolling, didn't work well with PuTTY
-set modeline        " last lines in document sets vim mode
-set modelines=3     " number lines checked for modelines
-set shortmess=atI   " Abbreviate messages
-set nostartofline   " don't jump to first character when paging
-set whichwrap=b,s,h,l,<,>,[,]   " move freely between files
-"set viminfo='20,<50,s10,h
+set nocompatible                " no compatibility with vi
+set backspace=indent,eol,start  " allow backspacing over everything in insert mode
+set nobackup                    " do not keep a backup file, use versions instead
+set history=50                  " keep 50 lines of command line history
+"set viminfo=!,'20,\"500,c       " viminfo for 20 recent files
+set title                       " show the cursor position all the time
+set ruler                       " show the cursor position all the time
+set showcmd                     " display incomplete commands
+set incsearch                   " do incremental searching
+set tags=tags;/                 " search path for tags
+set softtabstop=4               " use 4 spaces for tabs
+set noexpandtab                   " expand tabs to spaces
+set shiftwidth=4                " width for indentation (used by cindent)
+set cindent                     " use C indenting
+set term=xterm                  " set terminal to xterm
+set tty=xterm                   " set tty to xterm
+set ttyfast                     " set fast terminal
+set showmode                    " show mode (visual/insert/replace)
+"set visualbell                  " show visual bell
+set undolevels=25               " set number of undo levels
+set textwidth=80                " set text width (max. no of columns)
+set wrap                        " wrap longer lines (display)
+set showmatch                   " set paranthesis matching
+set scrolloff=2                 " always have 2 lines of context
+set hlsearch                    " highlight searched text
+set cmdheight=1                 " set command line height to 1
+set ignorecase                  " ignore case in search patterns
+set statusline=%<\|\ %f%(\ \|\ %h%)%(\ \|\ %m%)%(\ \|\ %r%)\\|%=\|\%b(0x%B)\ \|\ %l,%c%V\ \|\ %P\ \| laststatus=2
+set background=light
+set guifont=Monospace\ 9
 
-"set autoindent     " always set autoindenting on
-"set smartindent        " smart indent
-"set cindent            " cindent
-set noautoindent
-set nosmartindent
-set nocindent
+:source $HOME/.vim/plugin/cscope_maps.vim
+:source $HOME/.vim/plugin/autoload_cscope.vim
+:source $HOME/.vim/plugin/supertab.vim
+:source $HOME/.vim/plugin/taglist.vim
 
-"set autowrite      " auto saves changes when quitting and swiching buffer
-"set expandtab      " tabs are converted to spaces, use only when required
-"set sm             " show matching braces, somewhat annoying...
-"set nowrap         " don't wrap lines
+:syntax enable
+":colorscheme elflord
+highlight Statement ctermfg=DarkGreen
+highlight PreProc ctermfg=DarkMagenta
+highlight Type ctermfg=DarkBlue
+highlight Ignore ctermfg=LightGrey
+highlight LineNr ctermfg=DarkGreen
+highlight rightMargin ctermfg=red
 
-syntax on           " syntax highlighing
-if has("gui_running")
-    " See ~/.gvimrc
-    colorscheme elflord    " use this color scheme
-    set guifont=Monospace\ 10  " use this font 
-    set lines=40       " height = 50 lines
-    set columns=150        " width = 100 columns
-    set background=dark   " adapt colors for background
-    set selectmode=mouse,key,cmd
-    set keymodel=
-else
-    colorscheme elflord    " use this color scheme
-    set background=dark        " adapt colors for background
-endif
+match rightMargin /.\%>80v/
+match rightMargin /.\%>80v/
 
-if has("autocmd")
-    " Restore cursor position
-    au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
+nnoremap <silent> <F8> :TlistToggle<CR>
 
-    " Filetypes (au = autocmd)
-    au FileType helpfile set nonumber      " no line numbers when viewing help
-    au FileType helpfile nnoremap <buffer><cr> <c-]>   " Enter selects subject
-    au FileType helpfile nnoremap <buffer><bs> <c-T>   " Backspace to go back
-
-    " When using mutt, text width=72
-    au FileType mail,tex set textwidth=72
-    "au FileType cpp,c,java,sh,pl,php,phtml,asp  set autoindent
-    au FileType cpp,c,java,sh,pl,php,phtml,asp,xml,javascript  set smartindent
- "   nnoremap <C-p> :set invpaste paste?<CR>
- "   set pastetoggle=<C-p>
- "   set showmode
-    "au FileType cpp,c,java,sh,pl,php,phtml,asp  set cindent
-    "au BufRead mutt*[0-9] set tw=72
-
-    " Automatically chmod +x Shell and Perl scripts
-    "au BufWritePost   *.sh             !chmod +x %
-    "au BufWritePost   *.pl             !chmod +x %
-
-    " File formats
-    au BufNewFile,BufRead  *.phtml  set syntax=php
-    au BufNewFile,BufRead  *.pls    set syntax=dosini
-    au BufNewFile,BufRead  modprobe.conf    set syntax=modconf
-
-    " Ctrl+X O
-    autocmd FileType python set omnifunc=pythoncomplete#Complete
-    autocmd FileType javascript set omnifunc=javascriptcomplete#CompleteJS
-    autocmd FileType html set omnifunc=htmlcomplete#CompleteTags
-    autocmd FileType css set omnifunc=csscomplete#CompleteCSS
-    autocmd FileType xml set omnifunc=xmlcomplete#CompleteTags
-    autocmd FileType php set omnifunc=phpcomplete#CompletePHP
-    autocmd FileType c set omnifunc=ccomplete#Complete
-
-    autocmd FileType php noremap <C-L> :!php -l %<CR>
-    autocmd Filetype html,xml,xsl source ~/.vim/closetag.vim
-endif
+"autocmd bufnewfile *.c so /home/firetide/.vim/temp.txt
+"autocmd bufnewfile *.c exe "1," . 10 . "g/FILE:.*/s//FILE: " .expand("%")
+"autocmd Bufwritepre,filewritepre *.c execute "normal ma"
+"autocmd Bufwritepre,filewritepre *.c exe "1," . 10 . "g/LAST MODIFIED:.*/s/LAST MODIFIED:.*/LAST MODIFIED: " .strftime("%c")
+"autocmd bufwritepost,filewritepost *.c execute "normal `a"
