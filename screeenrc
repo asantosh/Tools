@@ -1,0 +1,24 @@
+#startup_message off
+vbell off
+
+escape ``
+
+shelltitle "Shell"
+defscrollback 10000
+
+#Window numbering starts at 1, not 0.
+bind c screen 1
+bind 0 select 10
+
+# Look and feel
+#hardstatus alwayslastline "%-Lw%{= kG}%50>%n%f* %t%{-}%+Lw%<  %=% [%{=b)%{Y}%l%{g}]"
+hardstatus alwayslastline
+hardstatus string '%{= kG}%-Lw%{= kW}%50> %n*%f %t%{= kG}%+Lw%< | %1`%{-}'
+#caption always "%{= kG}%{+b w}Screen: %n | %h %=%t %D %d/%m/%y %c:%s"
+
+# Having this command in your .screenrc would bind the key sequence
+# C-a R’ to the u’ command and give it an auto-title name of oot:’.
+bind R screen -t '% |root:' sudo bash
+bind 'K' kill
+
+screen -t  Shell 1
