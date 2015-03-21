@@ -2,4 +2,10 @@
 /* root */
 PS1='\n\[\e[34m\][\w]\n\[$(tput setaf 0)\][\[$(tput setaf 4)\]\u\[$(tput setaf 1)\]@\[$(tput setaf 5)\]\h \[$(tput setaf 6)\]\W\[$(tput setaf 0)\]]\[$(tput setaf 4)\]\[$(tput setaf 1)\]\[$(tput setaf 1)\]# \[$(tput sgr0)\]'
 
+/*Simple Command Prompt for all User*/
+
+/* [ Full path of Current Working Directory ]*/
+/* [ username@domain Directory >$ */
+/* [ color 36m; cyan ]*/
+PS1='\n[\w]\n\[\e[36m\]\u@\h \W >$ \[\e[0m\]'
 
