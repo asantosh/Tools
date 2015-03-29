@@ -12,7 +12,9 @@ PKG_NAME="subversion  \
 	 zlib1g-dev  \
 	 ctags"
 
-for PKG in $PKG_NAME
+@sudo apt-get update
+
+@for PKG in $PKG_NAME
 do
     echo "=================Now installing......[$PKG]"
     sudo apt-get install -y $PKG
