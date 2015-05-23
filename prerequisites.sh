@@ -1,6 +1,7 @@
 #!/bin/sh
 
-PKG_NAME="subversion  \
+PKG_NAME="build-essential \
+	 subversion  \
 	 vim	     \
 	 g++	     \
 	 flex	     \
