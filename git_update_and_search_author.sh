@@ -17,7 +17,6 @@ option=${1}
 case ${option} in
 	"-h")		print_help;;
 	"--help")	print_help;;
-	*)			print_help;;
 esac
 
 cd $1
