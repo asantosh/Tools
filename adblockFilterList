@@ -1,0 +1,16 @@
+@@||timesofindia.indiatimes.com/$document
+@@||partner.googleadservices.com^$domain=indiatimes.com
+@@||clmbtech.com^$script,domain=indiatimes.com
+@@||crwdcntrl.net^$script,domain=indiatimes.com
+@@||chartbeat.com^$domain=indiatimes.com
+@@||indiatimes.com^$generichide
+@@$image,domain=indiatimes.com
+@@||intoday.in^$generichide
+@@||pagead2.googlesyndication.com/pagead/show_ads.js$domain=intoday.in
+@@||pagead2.googlesyndication.com/pagead/js/*/show_ads_impl.js$domain=intoday.in
+@@||zedo.com^$script,domain=intoday.in
+@@||ndtv.com^$script,domain=ndtv.com
+@@||ndtv.com^$elemhide
+@@||zedo.com^$script,domain=ndtv.com
+@@||ads.rubiconproject.com$script,domain=ndtv.com
+@@||forbes.com$elemhide
